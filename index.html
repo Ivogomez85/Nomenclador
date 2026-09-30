@@ -19,7 +19,7 @@
     @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
     body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
     body.auth-locked{overflow:hidden}
-    main{max-width:1180px;margin:auto;padding:0 20px 40px}
+    main{max-width:1440px;margin:auto;padding:0 clamp(20px,4vw,64px) 40px}
     h1{font-size:20px;margin:0;letter-spacing:-.01em} h2{font-size:17px;margin:0} p{margin:5px 0}
     .muted{color:var(--muted)}
 
@@ -40,7 +40,7 @@
 
     /* Header sticky con degradé navy→teal */
     .app-header{position:sticky;top:0;z-index:50;background:linear-gradient(100deg,var(--navy) 0%,var(--navy-2) 55%,var(--teal-2) 130%);color:#fff;box-shadow:0 2px 16px rgba(11,59,92,.18)}
-    .app-header-in{max-width:1180px;margin:auto;padding:14px 20px;display:flex;align-items:center;gap:14px}
+    .app-header-in{max-width:1440px;margin:auto;padding:14px clamp(20px,4vw,64px);display:flex;align-items:center;gap:14px}
     .brand{display:flex;align-items:center;gap:12px;min-width:0}
     .brand .logo{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.16);display:grid;place-items:center;flex:none;backdrop-filter:blur(4px)}
     .brand .logo svg{width:21px;height:21px;color:#fff}
@@ -375,6 +375,23 @@
       .pos-fecha{text-align:left}
       #copyToast{bottom:18px;font-size:13px}
     }
+
+    /* Listado completo */
+    .list-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 2px 12px}
+    .list-hint{flex:1;min-width:220px;color:var(--muted);font-size:13px}
+    .list-wrap{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:auto}
+    .list-table{width:100%;border-collapse:collapse;font-size:13.5px}
+    .list-table th{background:var(--navy);color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:11px 14px;text-align:left;position:sticky;top:0}
+    .list-table td{padding:9px 14px;border-bottom:1px solid var(--line-2);vertical-align:middle;text-align:left}
+    .list-table .c{text-align:center}.list-table .r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+    .list-table td.r{font-weight:700;color:var(--navy)}
+    .list-table td.code{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:600}
+    .list-table tr.grp td{background:#f3f6fa;color:var(--navy);font-size:13px;border-bottom:1px solid var(--line)}
+    .list-table tr.grp span{float:right;color:var(--muted);font-size:12px}
+    .list-table tbody tr:not(.grp):hover td{background:#fafcfe}
+    .list-pager{display:flex;justify-content:center;align-items:center;gap:8px;margin:16px 0;color:var(--muted);font-size:13px}
+    .list-pager button{border:1px solid var(--line);background:#fff;color:var(--navy);border-radius:9px;padding:8px 13px;font:inherit;font-size:13px;font-weight:650;cursor:pointer}
+    .list-pager button:disabled{opacity:.4;cursor:default}
   </style>
 </head>
 <body class="auth-locked">
@@ -415,6 +432,7 @@
     <div class="view-switch">
       <button id="searchViewBtn" class="active">General</button>
       <button id="categoriesViewBtn">Categorías</button>
+      <button id="listViewBtn">Listado completo</button>
     </div>
 
     <div class="search-wrap">
@@ -716,7 +734,7 @@ const checkIco='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strok
 
 function card(x,i){const meta=[x.moduloCodigo&&x.type!=='modulo'?`Módulo ${x.moduloCodigo}`:'',x.categoria&&x.categoria!==x.nombre?x.categoria:'',x.nivel?`Nivel ${x.nivel}`:'',x.vigencia?`Período: ${x.vigencia}`:'',x.autorizacion?`Autorización/AC: ${x.autorizacion}`:''].filter(Boolean).join(' · ');const soft=x.type==='modulo'&&!x.valor;const total=soft?'':money(x.valor);const selected=state.sel.has(i)?' selected':'';return `<article class="result${selected}" data-i="${i}"><div class="sel-check">${checkIco}</div><button class="copy-btn" data-copy="${i}" title="Copiar" aria-label="Copiar">${copyIco}</button><span class="copied-flash">Copiado ✓</span><div class="result-head" data-head="${i}"><div class="rh-main"><div class="rh-top"><span class="badge" data-t="${esc(x.type)}">${esc(x.type)}</span><span class="code">${esc(x.codigo||'Sin código')}</span></div><div class="name">${esc(x.nombre)}</div></div><div class="value${soft?' soft':''}">${soft?'':`<small>Valor</small>${esc(total)}`}</div></div>${meta?`<div class="meta">${esc(meta)}</div>`:''}${subsBlock(x.subvalues,x.type==='modulo'?'Abrir prácticas del módulo':'Desglose de subvalores')}${historyBlock(x.history)}${docsBlock('Documentación previa',x.docsPre,'doc-pre')}${docsBlock('Documentación posterior',x.docsPost,'doc-post')}</article>`}
 
-function setView(view){state.view=view;state.category='';state.module='';clearSel();$('#searchViewBtn').classList.toggle('active',view==='search');$('#categoriesViewBtn').classList.toggle('active',view==='categories');render()}
+function setView(view){state.view=view;state.category='';state.module='';clearSel();$('#searchViewBtn').classList.toggle('active',view==='search');$('#categoriesViewBtn').classList.toggle('active',view==='categories');$('#listViewBtn').classList.toggle('active',view==='list');render()}
 
 /* En General: sin búsqueda no se muestra listado. En Categorías: cards de categoría hasta elegir una. */
 function renderSearch(){const q=norm($('#search').value);if(!q){state.current=[];clearSel();const ab=$('#actionbar');ab.innerHTML='';ab.hidden=true;$('#resultCount').textContent='';$('#results').innerHTML='';if(typeof renderLastSearch==='function')renderLastSearch();return}const all=filtered();state.current=all;const limit=100,shown=all.slice(0,limit);$('#resultCount').textContent=`${all.length.toLocaleString('es-AR')} resultado${all.length===1?'':'s'}${all.length>limit?` · mostrando ${limit}`:''}`;$('#results').innerHTML=shown.length?shown.map((x,i)=>card(x,i)).join(''):'<div class="empty">No se encontraron coincidencias.</div>';renderActionbar();}
@@ -727,7 +745,7 @@ function renderCategories(){const period=$('#periodFilter').value;let mods0=stat
   if(!state.module){state.current=[];clearSel();$('#actionbar').innerHTML='';$('#actionbar').hidden=true;$('#resultCount').textContent=`${inCategory.length} módulos en ${state.category}`;$('#results').innerHTML=`<div class="crumbs"><button data-back="categories">← Categorías</button><strong>${esc(state.category)}</strong></div><div class="module-grid">${inCategory.map(m=>`<button class="module-card" data-module="${esc(encodeURIComponent(m.codigo))}"><div class="code">Módulo ${esc(m.codigo)}</div><strong>${esc(m.nombre)}</strong><span>${(m.subvalues||[]).length} práctica(s) · ${esc(m.vigencia||'sin período')}</span></button>`).join('')}</div>`;return}
   const mod=inCategory.find(m=>m.codigo===state.module);if(!mod){state.module='';renderCategories();return}state.current=[mod];$('#resultCount').textContent=`Módulo ${mod.codigo} · ${(mod.subvalues||[]).length} prácticas`;$('#results').innerHTML=`<div class="crumbs"><button data-back="categories">← Categorías</button><button data-back="modules">← ${esc(state.category)}</button></div>${card(mod,0)}`;renderActionbar();}
 
-function render(){$('#hero')&&$('#hero').classList.toggle('compact',state.view==='categories'||!!norm($('#search').value));state.view==='categories'?renderCategories():renderSearch()}
+function render(){$('#hero')&&$('#hero').classList.toggle('compact',state.view!=='search'||!!norm($('#search').value));state.view==='categories'?renderCategories():state.view==='list'?renderList():renderSearch()}
 
 /* ---- Copiado y selección ---- */
 function toast(msg){const t=$('#copyToast');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1900);}
@@ -743,7 +761,7 @@ $('#loadBtn').addEventListener('click',loadFromSheets);
 $('#clearBtn').addEventListener('click',()=>{$('#search').value='';try{localStorage.removeItem(STORAGE_ACTIVE_SEARCH)}catch(e){}$('#clearBtn').classList.remove('show');clearSel();$('#actionbar').innerHTML='';$('#actionbar').hidden=true;$('#search').focus();render()});
 $('#searchViewBtn').addEventListener('click',()=>setView('search'));
 document.querySelectorAll('.qcard').forEach(ch=>ch.addEventListener('click',()=>{$('#search').value=(ch.dataset.q||ch.textContent.trim());$('#search').dispatchEvent(new Event('input',{bubbles:true}));$('#search').focus()}));
-$('#search').addEventListener('input',()=>{const consulta=$('#search').value;try{consulta?localStorage.setItem(STORAGE_ACTIVE_SEARCH,consulta):localStorage.removeItem(STORAGE_ACTIVE_SEARCH)}catch(e){}state.view='search';$('#searchViewBtn').classList.add('active');$('#categoriesViewBtn').classList.remove('active');state.category='';state.module='';clearSel();$('#clearBtn').classList.toggle('show',!!consulta);render()});
+$('#search').addEventListener('input',()=>{const consulta=$('#search').value;try{consulta?localStorage.setItem(STORAGE_ACTIVE_SEARCH,consulta):localStorage.removeItem(STORAGE_ACTIVE_SEARCH)}catch(e){}if(state.view==='list'){state.listPage=0}else{state.view='search';$('#searchViewBtn').classList.add('active');$('#categoriesViewBtn').classList.remove('active')}state.category='';state.module='';clearSel();$('#clearBtn').classList.toggle('show',!!consulta);render()});
 
 var _lastQT=null;$('#search').addEventListener('input',()=>{const v=$('#search').value.trim();clearTimeout(_lastQT);_lastQT=setTimeout(()=>{if(v.length>=2){try{localStorage.setItem('pami_last_query',v)}catch(e){}}},900)});
 function renderLastSearch(){const el=$('#lastSearch');if(!el)return;let v='';try{v=localStorage.getItem('pami_last_query')||''}catch(e){}if(v&&!$('#search').value){el.hidden=false;el.innerHTML='<span class="ls-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l3 3"/></svg></span>Seguí con <b>'+esc(v)+'</b><span class="ls-go">→</span>'}else{el.hidden=true}}
@@ -950,6 +968,52 @@ $('#actionbar').addEventListener('click',e=>{const t=e.target.closest('button');
   document.addEventListener('touchstart',e=>{if(e.touches.length===1)inicioY=e.touches[0].clientY},{passive:true});
   document.addEventListener('touchmove',e=>{if(e.touches.length!==1)return;const dentroModal=e.target instanceof Element&&e.target.closest('.modal');if(!dentroModal&&window.scrollY<=0&&e.touches[0].clientY>inicioY+4)e.preventDefault()},{passive:false});
 })();
+
+/* ===== Listado completo ===== */
+state.listPage=0;
+const LIST_PAGE=100;
+function valorPrevio(x,period){const h=x.history||[];if(!h.length)return null;let i=period==='latest'?h.length-1:h.findIndex(e=>e.periodo===period);return i>0?h[i-1]:null}
+function flatRows(){
+  const q=norm($('#search').value),type=$('#typeFilter').value,period=$('#periodFilter').value,codes=posadasCodes(),terms=q.split(' ').filter(Boolean);
+  const posBy=new Map((state.posadas||[]).map(p=>[clean(p.codigo),p]));
+  const out=[];
+  for(const x0 of state.db){
+    if(x0.type==='modulo'&&(x0.subvalues||[]).some(s=>s.type))continue; /* grupo derivado: sus prácticas ya están en la base */
+    if(state.posadasMode&&!enPosadas(x0,codes))continue;
+    if(type!=='all'&&x0.type!==type)continue;
+    if(terms.length&&!terms.every(t=>x0._search.includes(t)))continue;
+    const x=atPeriod(x0,period);if(!x)continue;
+    const mod=clean(x.moduloCodigo)||(x.type==='modulo'?clean(x.codigo):''),cat=(state.raw.catalogoModulos||{})[mod]||{},prev=valorPrevio(x0,period),pos=posBy.get(mod);
+    const row={mod,modNombre:x.moduloNombre||cat.nombre||(x.type==='modulo'?x.nombre:''),categoria:x.categoria||'',nivel:x.nivel||cat.nivel||'',type:x.type,codigo:clean(x.codigo),nombre:x.nombre,valor:toNum(x.valor),valorTxt:x.valor,vigencia:x.vigencia||'',autorizacion:x.autorizacion||'',prevValor:prev?toNum(prev.valor):NaN,prevPeriodo:prev?prev.periodo:'',posadas:x.type==='medicamento'?'':(pos?'SI':'NO'),capitado:pos?(pos.capitado?'SI':'NO'):'',docsPre:(x.docsPre||[]).join(' | '),docsPost:(x.docsPost||[]).join(' | '),history:x0.history||[]};
+    out.push(row);
+    for(const s of (x.subvalues||[]))if(!s.type)out.push({...row,type:'subvalor',codigo:clean(s.codigo),nombre:s.nombre,valor:toNum(s.valor),valorTxt:s.valor,prevValor:NaN,prevPeriodo:'',docsPre:'',docsPost:'',history:[],padre:row.codigo});
+  }
+  const ord={modulo:0,practica:1,subvalor:1,medicamento:2},num=v=>{const n=Number(v);return Number.isFinite(n)&&v!==''?n:Infinity};
+  return out.sort((a,b)=>(ord[a.type]===2)-(ord[b.type]===2)||num(a.mod)-num(b.mod)||a.mod.localeCompare(b.mod,'es',{numeric:true})||String(a.padre||a.codigo).localeCompare(String(b.padre||b.codigo),'es',{numeric:true})||(a.type==='subvalor')-(b.type==='subvalor')||a.codigo.localeCompare(b.codigo,'es',{numeric:true}));
+}
+const TIPO_LBL={modulo:'Módulo',practica:'Práctica',subvalor:'Subvalor',medicamento:'Medicamento'};
+function renderList(){
+  const rows=flatRows();state.current=[];clearSel();const ab=$('#actionbar');ab.innerHTML='';ab.hidden=true;
+  const pages=Math.max(1,Math.ceil(rows.length/LIST_PAGE));if(state.listPage>=pages)state.listPage=pages-1;
+  const start=state.listPage*LIST_PAGE,shown=rows.slice(start,start+LIST_PAGE);
+  const per=$('#periodFilter').value;
+  $('#resultCount').textContent=`${rows.length.toLocaleString('es-AR')} ítems · ${new Set(rows.map(r=>r.mod)).size} módulos · período ${per==='latest'?'vigente':per}`;
+  if(!rows.length){$('#results').innerHTML='<div class="empty">No hay ítems para este filtro.</div>';return}
+  let h='<div class="list-bar"><span class="list-hint">Ordenado por módulo y código. El buscador y los filtros de tipo y período acotan el listado.</span></div><div class="list-wrap"><table class="list-table"><thead><tr><th class="c">Tipo</th><th class="c">Código</th><th>Descripción</th><th class="c">Autorización</th><th class="r">Valor</th></tr></thead><tbody>',last=null;
+  for(const r of shown){
+    if(r.mod!==last){last=r.mod;h+=`<tr class="grp"><td colspan="5"><b>${r.type==='medicamento'&&!r.modNombre?'Medicamentos · módulo ':'Módulo '}${esc(r.mod||'s/n')}</b>${r.modNombre?' · '+esc(r.modNombre):''}<span>${esc([r.categoria,r.nivel?'Nivel '+r.nivel:'',r.posadas==='SI'?'Posadas'+(r.capitado==='SI'?' · capitado':''):''].filter(Boolean).join(' · '))}</span></td></tr>`}
+    h+=`<tr><td class="c"><span class="badge" data-t="${r.type==='subvalor'?'practica':r.type}">${TIPO_LBL[r.type]}</span></td><td class="c code">${esc(r.codigo)}</td><td>${esc(r.nombre)}</td><td class="c">${esc(r.autorizacion)}</td><td class="r">${Number.isFinite(r.valor)?esc(money(r.valor)):'<span class="muted">—</span>'}</td></tr>`;
+  }
+  h+='</tbody></table></div>';
+  if(pages>1)h+=`<div class="list-pager"><button data-list="first" ${state.listPage?'':'disabled'}>«</button><button data-list="prev" ${state.listPage?'':'disabled'}>‹ Anterior</button><span>Página ${state.listPage+1} de ${pages}</span><button data-list="next" ${state.listPage<pages-1?'':'disabled'}>Siguiente ›</button><button data-list="last" ${state.listPage<pages-1?'':'disabled'}>»</button></div>`;
+  $('#results').innerHTML=h;
+}
+$('#listViewBtn').addEventListener('click',()=>{state.listPage=0;setView('list')});
+$('#results').addEventListener('click',e=>{const b=e.target.closest('[data-list]');if(!b)return;const a=b.dataset.list;
+  const pages=Math.ceil(flatRows().length/LIST_PAGE);
+  state.listPage=a==='first'?0:a==='last'?pages-1:a==='prev'?Math.max(0,state.listPage-1):Math.min(pages-1,state.listPage+1);
+  renderList();$('#resultCount').scrollIntoView({block:'start',behavior:'smooth'})});
+
 </script>
 </body>
 </html>
